@@ -5,12 +5,18 @@ import { FaSearch } from "react-icons/fa";
 import { BsFillCartCheckFill } from "react-icons/bs";
 import {Link} from 'react-router-dom';
 import { useStateValue } from './StateProvider';
+import {auth} from './firebase';
 
 
 function Header() {
-  const [{basket}, dispatch] =useStateValue();
+  const [{basket, user}, dispatch] =useStateValue();
 
-  
+  const handleauth = () =>{
+    if (user) {
+      auth.signOut(); 
+    }
+  }
+
   return (
     <div className='header'>
       <Link to='/'>
@@ -18,19 +24,20 @@ function Header() {
       src={Amazon} alt="" />
 
       </Link>
+
       <div className="header__search">
         <input className='header__searchInput' type="text" />
         <FaSearch className='header__searchIcon'/>
       </div>
 
       <div className="header__nav">
-        <Link to='/login'>
-        <div className="header__option">
+        <Link to={!user && '/login'}>
+        <div onClick={handleauth} className="header__option">
             <span className="header__optionLineOne">
-                Hello guest
+                Hello {!user ? 'Guest' : user.email}
             </span>
             <span className="header__optionLineTwo">
-             sign-in
+             {user ? 'sign Out' : 'Sign In'}
             </span>
         </div>
         </Link>

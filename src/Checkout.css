@@ -8,10 +8,16 @@
     width: 1120px;
     margin-bottom: 10px;
     height: 90px;
-    object-fit: cover;   
+    object-fit: cover; 
+      
 }
 .checkout__title{
     margin-right: 10px;
     padding: 10px;
     border-bottom: 1px solid lightgrey;
 }
+@media only screen and (max-width: 600px) {
+    .chceckout__ad {
+      width: 190px;
+    }
+  }
