@@ -1,22 +1,60 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Payment.css';
 import { useStateValue } from './StateProvider';
 import CheckoutProduct from './CheckoutProduct';
-import {Link} from 'react-router-dom';
-import { CardElement, useStripe,useElements } from '@stripe/react-stripe-js';
+import {Link, useHistory} from 'react-router-dom';
+import { getBasetTotal } from "./Reducer";
+import axios from './Axios.js';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 
 function Payment() {
     const [{basket, user}, dispatch] =useStateValue();
+    const history = useHistory();
 
     const stripe = useStripe();
     const elements= useElements();
     
     const [error, setError] = useState(null);
     const [disabled, setDisabled] = useState(true);
+    const [succeeded, SetSucceeded] = useState(false);
+    const [processing, SetProcessing] = useState("");
+    const [clientSecret, SetClientSecret] = useState(true);
 
-    const handlesubmit =e =>{
+    useEffect(()=>{
+        const getclientSecret = async()=>{
 
+            const response = await axios({
+                method: 'post',
+                url: `/payment/create?total=${getBasetTotal(basket) * 100}`
+            });
+            SetClientSecret(response.data.clientSecret)
+        }
+        getclientSecret();
+    }, [basket]);
+
+    const handlesubmit =async (e) =>{
+        e.preventDefault();
+        SetProcessing(true);
+
+        const payload = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: elements.getElement(CardElement)
+            }
+        }).then(({payemntIntent})=>{
+
+        //payemntIntent = payment confirmation
+
+        SetSucceeded(true);
+        setError(null)
+        SetProcessing(false)
+
+        dispatch({
+            type:'EMPTY_BASKET'
+        })
+
+        history.replace('/orders')
+        }) 
     }
     const handlechange =e =>{
         setDisabled(e.empty);
@@ -63,7 +101,6 @@ function Payment() {
                 </div>
             </div>
 
-
             {/*payemnt section and payment method*/}
             <div className="payment__section">
                 <div className="payment__title">
@@ -72,7 +109,20 @@ function Payment() {
                 <div className="payment__details">
                     <form onSubmit={handlesubmit}>
                         <CardElement onChange={handlechange}/>
-                    </form>
+                        <div className="payment__pricecontainer">
+                        <p>
+
+            {/* Subtotal ({basket.length} items):{" "} */}
+            <strong>Order Total: ${getBasetTotal(basket)}</strong>
+          </p>
+          <button disabled={processing || disabled || succeeded}>
+            <span>{processing ? <p>Processing</p> :'Buy Now '}</span>
+          </button>
+
+          </div>
+          {/*Error*/ }
+          {error && <div>{error}</div>}
+          </form>
 
                 </div>
                 </div>
