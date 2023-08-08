@@ -6,11 +6,12 @@ import {Link, useHistory} from 'react-router-dom';
 import { getBasetTotal } from "./Reducer";
 import axios from './Axios.js';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-
+import { db } from './firebase';
 
 function Payment() {
     const [{basket, user}, dispatch] =useStateValue();
     const history = useHistory();
+    // const [paymentIntent, setPaymentIntent] = useState(null);
 
     const stripe = useStripe();
     const elements= useElements();
@@ -41,9 +42,17 @@ function Payment() {
             payment_method: {
                 card: elements.getElement(CardElement)
             }
-        }).then(({payemntIntent})=>{
-
+        }).then(({paymentIntent})=>{
         //payemntIntent = payment confirmation
+        db.collection('users')
+        .doc(user?.uid)
+        .collection('orders')
+        .doc(paymentIntent.id)
+        .set({
+            basket: basket,
+            amount: paymentIntent.amount,
+            created:paymentIntent.created,
+        })
 
         SetSucceeded(true);
         setError(null)

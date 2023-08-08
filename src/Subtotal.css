@@ -25,9 +25,9 @@
     margin-top: 10px;
     border-color: #a88734 #9c7e31 #846a29;
 }
-/* @media only screen and (max-width: 600px) {
+@media only screen and (max-width: 600px) {
     .subtotal {
       width: 85px;
       height: 130px;
     }
-  } */
+  }
